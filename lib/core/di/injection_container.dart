@@ -61,7 +61,7 @@ Future<void> initDependencies() async {
     () => StorageClientImpl(Supabase.instance.client),
   );
   sl.registerLazySingleton<DatabaseClient>(
-    () => DatabaseClientImpl(),
+    () => DatabaseClientImpl(Supabase.instance.client),
   );
 
   // ===== Auth DataSources =====

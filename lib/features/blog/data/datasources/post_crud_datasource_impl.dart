@@ -4,7 +4,6 @@ import 'package:blog_app/features/blog/data/datasources/post_crud_datasource.dar
 import 'package:blog_app/features/blog/data/models/post_model.dart';
 
 class PostCrudDataSourceImpl implements PostCrudDataSource {
-  // ignore: unused_field
   final DatabaseClient _databaseClient;
 
   PostCrudDataSourceImpl(this._databaseClient);

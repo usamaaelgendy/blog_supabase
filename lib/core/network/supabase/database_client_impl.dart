@@ -1,12 +1,16 @@
 import 'package:blog_app/core/network/supabase/database_client.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DatabaseClientImpl implements DatabaseClient {
-  DatabaseClientImpl();
+  final SupabaseClient _client;
+
+  DatabaseClientImpl(this._client);
 
   @override
   Future<Map<String, dynamic>> insert(String table, Map<String, dynamic> data) async {
-    // TODO: Implement insert
-    throw UnimplementedError('insert not implemented yet');
+    final response = await _client.from(table).insert(data).select().single();
+
+    return response;
   }
 
   @override
@@ -19,18 +23,32 @@ class DatabaseClientImpl implements DatabaseClient {
     int? rangeFrom,
     int? rangeTo,
   }) async {
-    // TODO: Implement select
-    throw UnimplementedError('select not implemented yet');
+    dynamic query = _client.from(table).select(columns);
+
+    if (filters != null) {
+      filters.forEach((key, value) {
+        query = query.eq(key, value);
+      });
+    }
+
+    if (orderBy != null) {
+      query = query.order(orderBy, ascending: ascending);
+    }
+
+    if (rangeFrom != null && rangeTo != null) {
+      query = query.range(rangeFrom, rangeTo);
+    }
+
+    final response = await query;
+
+    return List<Map<String, dynamic>>.from(response);
   }
 
   @override
-  Future<Map<String, dynamic>> selectById(
-    String table,
-    String id, {
-    String columns = '*',
-  }) async {
-    // TODO: Implement selectById
-    throw UnimplementedError('selectById not implemented yet');
+  Future<Map<String, dynamic>> selectById(String table, String id, {String columns = '*'}) async {
+    final response = await _client.from(table).select(columns).eq('id', id).single();
+
+    return response;
   }
 
   @override
