@@ -38,10 +38,9 @@ class PostCrudDataSourceImpl implements PostCrudDataSource {
   @override
   Future<PostModel> getPostById(String id) async {
     try {
-      // TODO: Implement getPostById
-      // Use _databaseClient.selectById() with columns: '*, author:profiles!author_id(*)'
-      // Parse the response into a PostModel
-      throw UnimplementedError('getPostById not implemented yet');
+      final response = await _databaseClient.selectById('posts', id, columns: '*, auther:profiles!author_id(*)');
+
+      return PostModel.fromJson(response);
     } on ServerException {
       rethrow;
     } catch (e) {
