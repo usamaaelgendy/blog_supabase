@@ -129,7 +129,9 @@ class _PostsListViewState extends State<PostsListView> {
                 itemCount: state.posts.length + (state.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == state.posts.length) {
-                    return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
+                    return const Center(
+                      child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+                    );
                   }
                   return _PostCard(post: state.posts[index]);
                 },
@@ -172,6 +174,7 @@ class _PostCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     height: 200,
+                    width: double.infinity,
                     color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: const Icon(Icons.image, size: 64, color: Colors.grey),
                   ),
@@ -191,7 +194,10 @@ class _PostCard extends StatelessWidget {
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                     ),
-                  Text(post.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    post.title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     post.content,
