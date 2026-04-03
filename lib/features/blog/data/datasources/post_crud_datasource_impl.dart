@@ -17,10 +17,17 @@ class PostCrudDataSourceImpl implements PostCrudDataSource {
     String? category,
   }) async {
     try {
-      // TODO: Implement createPost
-      // Use _databaseClient.insert() to insert a new post into the 'posts' table
-      // Then fetch the created post with author join using getPostById()
-      throw UnimplementedError('createPost not implemented yet');
+      final response = await _databaseClient.insert('posts', {
+        'title': title,
+        'content': content,
+        'author_id': authorId,
+        'image_url': imageUrl,
+        'category': category,
+      });
+
+      final postId = response['id'] as String;
+
+      return await getPostById(postId);
     } on ServerException {
       rethrow;
     } catch (e) {
