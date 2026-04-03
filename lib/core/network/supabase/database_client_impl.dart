@@ -53,8 +53,9 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @override
   Future<Map<String, dynamic>> update(String table, String id, Map<String, dynamic> data) async {
-    // TODO: Implement update
-    throw UnimplementedError('update not implemented yet');
+    final response = await _client.from(table).update(data).eq('id', id).select().single();
+
+    return response;
   }
 
   @override
