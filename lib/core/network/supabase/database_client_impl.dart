@@ -60,8 +60,7 @@ class DatabaseClientImpl implements DatabaseClient {
 
   @override
   Future<void> delete(String table, String id) async {
-    // TODO: Implement delete
-    throw UnimplementedError('delete not implemented yet');
+    await _client.from(table).delete().eq('id', id);
   }
 
   @override

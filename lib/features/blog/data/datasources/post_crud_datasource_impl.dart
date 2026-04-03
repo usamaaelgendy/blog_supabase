@@ -78,9 +78,7 @@ class PostCrudDataSourceImpl implements PostCrudDataSource {
   @override
   Future<void> deletePost(String id) async {
     try {
-      // TODO: Implement deletePost
-      // Use _databaseClient.delete() to delete the post from the 'posts' table
-      throw UnimplementedError('deletePost not implemented yet');
+      await _databaseClient.delete('posts', id);
     } on ServerException {
       rethrow;
     } catch (e) {
