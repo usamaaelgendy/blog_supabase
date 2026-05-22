@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:blog_app/core/error/exceptions.dart';
 import 'package:blog_app/core/network/supabase/database_client.dart';
+import 'package:blog_app/core/network/supabase/storage_client.dart';
 import 'package:blog_app/features/blog/data/datasources/post_crud_datasource.dart';
 import 'package:blog_app/features/blog/data/models/post_model.dart';
 
 class PostCrudDataSourceImpl implements PostCrudDataSource {
   final DatabaseClient _databaseClient;
+  final StorageClient _storageClient;
 
-  PostCrudDataSourceImpl(this._databaseClient);
+  PostCrudDataSourceImpl(this._databaseClient, this._storageClient);
 
   @override
   Future<PostModel> createPost({
@@ -83,6 +87,25 @@ class PostCrudDataSourceImpl implements PostCrudDataSource {
       rethrow;
     } catch (e) {
       throw ServerException('Failed to delete post: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<String> uploadPostImage({required String authorId, required String filePath}) async {
+    try {
+      final fileBytes = await File(filePath).readAsBytes();
+      final extension = filePath.split('.').last;
+      final storagePath = '$authorId/${DateTime.now().millisecondsSinceEpoch}.$extension';
+      return await _storageClient.uploadFile(
+        bucket: 'post-image',
+        path: storagePath,
+        fileBytes: fileBytes,
+        contentType: 'image/$extension',
+      );
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException('Failed to upload post image: ${e.toString()}');
     }
   }
 }

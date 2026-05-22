@@ -81,4 +81,16 @@ class PostCrudRepositoryImpl implements PostCrudRepository {
       return Left(ServerFailure('Unexpected error: ${e.toString()}'));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> uploadPostImage({required String authorId, required String filePath}) async {
+    try {
+      final url = await postCrudDataSource.uploadPostImage(authorId: authorId, filePath: filePath);
+      return Right(url);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Unexpected error: ${e.toString()}'));
+    }
+  }
 }

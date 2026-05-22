@@ -159,6 +159,7 @@ class _EditPostViewState extends State<EditPostView> {
     if (!_formKey.currentState!.validate()) return;
     context.read<PostCrudBloc>().add(UpdatePostEvent(
       id: widget.post.id,
+      authorId: widget.post.authorId,
       title: _titleController.text.trim(),
       content: _contentController.text.trim(),
       imagePath: _imagePath,

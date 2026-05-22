@@ -37,6 +37,7 @@ class GetPostByIdEvent extends PostCrudEvent {
 
 class UpdatePostEvent extends PostCrudEvent {
   final String id;
+  final String authorId;
   final String? title;
   final String? content;
   final String? imagePath;
@@ -44,6 +45,7 @@ class UpdatePostEvent extends PostCrudEvent {
 
   const UpdatePostEvent({
     required this.id,
+    required this.authorId,
     this.title,
     this.content,
     this.imagePath,
@@ -51,7 +53,7 @@ class UpdatePostEvent extends PostCrudEvent {
   });
 
   @override
-  List<Object?> get props => [id, title, content, imagePath, category];
+  List<Object?> get props => [id, authorId, title, content, imagePath, category];
 }
 
 class DeletePostEvent extends PostCrudEvent {

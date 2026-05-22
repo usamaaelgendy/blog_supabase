@@ -22,4 +22,6 @@ abstract class PostCrudRepository {
   });
 
   Future<Either<Failure, void>> deletePost(String id);
+
+  Future<Either<Failure, String>> uploadPostImage({required String authorId, required String filePath});
 }

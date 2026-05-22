@@ -86,7 +86,7 @@ Future<void> initDependencies() async {
   sl.registerFactory(() => ProfileBloc(profileRepository: sl()));
 
   // ===== Blog DataSources =====
-  sl.registerLazySingleton<PostCrudDataSource>(() => PostCrudDataSourceImpl(sl()));
+  sl.registerLazySingleton<PostCrudDataSource>(() => PostCrudDataSourceImpl(sl(), sl()));
   sl.registerLazySingleton<PostQueryDataSource>(() => PostQueryDataSourceImpl(sl()));
   sl.registerLazySingleton<CommentDataSource>(() => CommentDataSourceImpl(sl()));
 
