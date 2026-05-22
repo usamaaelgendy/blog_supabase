@@ -11,11 +11,7 @@ abstract class DatabaseClient {
     int? rangeTo,
   });
 
-  Future<Map<String, dynamic>> selectById(
-    String table,
-    String id, {
-    String columns = '*',
-  });
+  Future<Map<String, dynamic>> selectById(String table, String id, {String columns = '*'});
 
   Future<Map<String, dynamic>> update(String table, String id, Map<String, dynamic> data);
 
@@ -27,6 +23,4 @@ abstract class DatabaseClient {
     required String query,
     String columns = '*',
   });
-
-  Future<void> rpc(String functionName, {Map<String, dynamic>? params});
 }

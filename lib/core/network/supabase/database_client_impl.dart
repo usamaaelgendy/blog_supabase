@@ -79,9 +79,4 @@ class DatabaseClientImpl implements DatabaseClient {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  @override
-  Future<void> rpc(String functionName, {Map<String, dynamic>? params}) async {
-    // TODO: Implement rpc
-    throw UnimplementedError('rpc not implemented yet');
-  }
 }
