@@ -56,8 +56,13 @@ class PostQueryDataSourceImpl implements PostQueryDataSource {
   @override
   Future<List<PostModel>> searchPosts({required String query}) async {
     try {
-      // TODO: Implement searchPosts
-      throw UnimplementedError('searchPosts not implemented yet');
+      final response = await _databaseClient.search(
+        'posts',
+        column: 'title',
+        query: query,
+        columns: '*, author:profiles!author_id(*)',
+      );
+      return response.map((e) => PostModel.fromJson(e)).toList();
     } on ServerException {
       rethrow;
     } catch (e) {
