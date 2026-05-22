@@ -9,6 +9,7 @@ class PostQueryBloc extends Bloc<PostQueryEvent, PostQueryState> {
 
   static const int _pageSize = 10;
   List<PostEntity> _allPosts = [];
+  String? _currentCategory;
 
   PostQueryBloc({required this.postQueryRepository}) : super(PostQueryInitial()) {
     on<GetPostsEvent>(_onGetPosts);
@@ -21,7 +22,12 @@ class PostQueryBloc extends Bloc<PostQueryEvent, PostQueryState> {
   Future<void> _onGetPosts(GetPostsEvent event, Emitter<PostQueryState> emit) async {
     emit(PostQueryLoading());
     _allPosts = [];
-    final result = await postQueryRepository.getPosts(rangeFrom: 0, rangeTo: _pageSize - 1);
+    _currentCategory = event.category;
+    final result = await postQueryRepository.getPosts(
+      rangeFrom: 0,
+      rangeTo: _pageSize - 1,
+      category: _currentCategory,
+    );
     result.fold(
       (failure) => emit(PostQueryError(failure.message)),
       (posts) {
@@ -34,7 +40,11 @@ class PostQueryBloc extends Bloc<PostQueryEvent, PostQueryState> {
   Future<void> _onLoadMorePosts(LoadMorePostsEvent event, Emitter<PostQueryState> emit) async {
     final rangeFrom = _allPosts.length;
     final rangeTo = rangeFrom + _pageSize - 1;
-    final result = await postQueryRepository.getPosts(rangeFrom: rangeFrom, rangeTo: rangeTo);
+    final result = await postQueryRepository.getPosts(
+      rangeFrom: rangeFrom,
+      rangeTo: rangeTo,
+      category: _currentCategory,
+    );
     result.fold(
       (failure) => emit(PostQueryError(failure.message)),
       (posts) {
@@ -68,7 +78,11 @@ class PostQueryBloc extends Bloc<PostQueryEvent, PostQueryState> {
 
   Future<void> _onRefreshPosts(RefreshPostsEvent event, Emitter<PostQueryState> emit) async {
     _allPosts = [];
-    final result = await postQueryRepository.getPosts(rangeFrom: 0, rangeTo: _pageSize - 1);
+    final result = await postQueryRepository.getPosts(
+      rangeFrom: 0,
+      rangeTo: _pageSize - 1,
+      category: _currentCategory,
+    );
     result.fold(
       (failure) => emit(PostQueryError(failure.message)),
       (posts) {

@@ -1,4 +1,5 @@
 import 'package:blog_app/core/di/injection_container.dart';
+import 'package:blog_app/core/widgets/category_filter_bar.dart';
 import 'package:blog_app/features/blog/domain/entities/post_entity.dart';
 import 'package:blog_app/features/blog/presentation/bloc/post_query/post_query_bloc.dart';
 import 'package:blog_app/features/blog/presentation/bloc/post_query/post_query_event.dart';
@@ -30,6 +31,7 @@ class _PostsListViewState extends State<PostsListView> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   bool _isSearching = false;
+  String? _selectedCategory;
 
   @override
   void initState() {
@@ -75,71 +77,86 @@ class _PostsListViewState extends State<PostsListView> {
                 _isSearching = !_isSearching;
                 if (!_isSearching) {
                   _searchController.clear();
-                  context.read<PostQueryBloc>().add(const GetPostsEvent());
+                  context.read<PostQueryBloc>().add(GetPostsEvent(category: _selectedCategory));
                 }
               });
             },
           ),
         ],
       ),
-      body: BlocBuilder<PostQueryBloc, PostQueryState>(
-        builder: (context, state) {
-          if (state is PostQueryLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is PostQueryError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
-                  const SizedBox(height: 16),
-                  Text(state.message, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: () => context.read<PostQueryBloc>().add(const GetPostsEvent()),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is PostsLoaded) {
-            if (state.posts.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.article_outlined, size: 80, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text('No posts yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
-                    const SizedBox(height: 8),
-                    const Text('Be the first to create a post!'),
-                  ],
-                ),
-              );
-            }
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<PostQueryBloc>().add(const RefreshPostsEvent());
+      body: Column(
+        children: [
+          if (!_isSearching)
+            CategoryFilterBar(
+              selected: _selectedCategory,
+              onSelected: (value) {
+                setState(() => _selectedCategory = value);
+                context.read<PostQueryBloc>().add(GetPostsEvent(category: value));
               },
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16),
-                itemCount: state.posts.length + (state.hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == state.posts.length) {
-                    return const Center(
-                      child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+            ),
+          Expanded(
+            child: BlocBuilder<PostQueryBloc, PostQueryState>(
+              builder: (context, state) {
+                if (state is PostQueryLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is PostQueryError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
+                        const SizedBox(height: 16),
+                        Text(state.message, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: () =>
+                              context.read<PostQueryBloc>().add(GetPostsEvent(category: _selectedCategory)),
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                if (state is PostsLoaded) {
+                  if (state.posts.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.article_outlined, size: 80, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text('No posts yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey)),
+                          const SizedBox(height: 8),
+                          const Text('Be the first to create a post!'),
+                        ],
+                      ),
                     );
                   }
-                  return _PostCard(post: state.posts[index]);
-                },
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        },
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<PostQueryBloc>().add(const RefreshPostsEvent());
+                    },
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: state.posts.length + (state.hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == state.posts.length) {
+                          return const Center(
+                            child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+                          );
+                        }
+                        return _PostCard(post: state.posts[index]);
+                      },
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context).pushNamed('/create-post'),

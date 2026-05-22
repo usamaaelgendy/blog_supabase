@@ -9,7 +9,7 @@ class PostQueryDataSourceImpl implements PostQueryDataSource {
   PostQueryDataSourceImpl(this._databaseClient);
 
   @override
-  Future<List<PostModel>> getPosts({int? rangeFrom, int? rangeTo}) async {
+  Future<List<PostModel>> getPosts({int? rangeFrom, int? rangeTo, String? category}) async {
     try {
       final response = await _databaseClient.select(
         'posts',
@@ -18,6 +18,7 @@ class PostQueryDataSourceImpl implements PostQueryDataSource {
         rangeTo: rangeTo,
         orderBy: 'created_at',
         ascending: false,
+        filters: category != null ? {'category': category} : null,
       );
 
       return response.map((e) => PostModel.fromJson(e)).toList();
@@ -31,8 +32,20 @@ class PostQueryDataSourceImpl implements PostQueryDataSource {
   @override
   Future<List<PostModel>> getMyPosts({required String userId, String? category}) async {
     try {
-      // TODO: Implement getMyPosts
-      throw UnimplementedError('getMyPosts not implemented yet');
+      final filters = <String, dynamic>{'author_id': userId};
+      if (category != null) {
+        filters['category'] = category;
+      }
+
+      final response = await _databaseClient.select(
+        'posts',
+        columns: '*, author:profiles!author_id(*)',
+        orderBy: 'created_at',
+        filters: filters,
+        ascending: false,
+      );
+
+      return response.map((e) => PostModel.fromJson(e)).toList();
     } on ServerException {
       rethrow;
     } catch (e) {

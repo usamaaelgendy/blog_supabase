@@ -1,4 +1,5 @@
 import 'package:blog_app/core/di/injection_container.dart';
+import 'package:blog_app/core/widgets/category_filter_bar.dart';
 import 'package:blog_app/features/auth/presentation/bloc/session/session_bloc.dart';
 import 'package:blog_app/features/auth/presentation/bloc/session/session_state.dart';
 import 'package:blog_app/features/blog/domain/entities/post_entity.dart';
@@ -19,54 +20,82 @@ class MyPostsPage extends StatelessWidget {
 
     return BlocProvider(
       create: (context) => sl<PostQueryBloc>()..add(GetMyPostsEvent(userId: userId)),
-      child: const MyPostsView(),
+      child: MyPostsView(userId: userId),
     );
   }
 }
 
-class MyPostsView extends StatelessWidget {
-  const MyPostsView({super.key});
+class MyPostsView extends StatefulWidget {
+  final String userId;
+
+  const MyPostsView({super.key, required this.userId});
+
+  @override
+  State<MyPostsView> createState() => _MyPostsViewState();
+}
+
+class _MyPostsViewState extends State<MyPostsView> {
+  String? _selectedCategory;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Posts')),
-      body: BlocBuilder<PostQueryBloc, PostQueryState>(
-        builder: (context, state) {
-          if (state is PostQueryLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is PostQueryError) {
-            return Center(child: Text(state.message));
-          }
-          if (state is PostsLoaded) {
-            if (state.posts.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.edit_note, size: 80, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text("You haven't written any posts yet", style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey)),
-                  ],
-                ),
-              );
-            }
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.posts.length,
-              itemBuilder: (context, index) {
-                final post = state.posts[index];
-                return _MyPostCard(post: post);
+      body: Column(
+        children: [
+          CategoryFilterBar(
+            selected: _selectedCategory,
+            onSelected: (value) {
+              setState(() => _selectedCategory = value);
+              context.read<PostQueryBloc>().add(GetMyPostsEvent(userId: widget.userId, category: value));
+            },
+          ),
+          Expanded(
+            child: BlocBuilder<PostQueryBloc, PostQueryState>(
+              builder: (context, state) {
+                if (state is PostQueryLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is PostQueryError) {
+                  return Center(child: Text(state.message));
+                }
+                if (state is PostsLoaded) {
+                  if (state.posts.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.edit_note, size: 80, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text(
+                            _selectedCategory == null
+                                ? "You haven't written any posts yet"
+                                : 'No posts in this category',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: state.posts.length,
+                    itemBuilder: (context, index) {
+                      final post = state.posts[index];
+                      return _MyPostCard(post: post);
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
               },
-            );
-          }
-          return const SizedBox.shrink();
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
 
 class _MyPostCard extends StatelessWidget {
   final PostEntity post;
@@ -81,17 +110,23 @@ class _MyPostCard extends StatelessWidget {
         contentPadding: const EdgeInsets.all(12),
         leading: post.imageUrl != null
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(post.imageUrl!, width: 60, height: 60, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.image))),
-              )
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(post.imageUrl!, width: 60, height: 60, fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Container(width: 60, height: 60, color: Colors.grey[300], child: const Icon(Icons.image))),
+        )
             : Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(8)),
-                child: const Icon(Icons.article),
-              ),
-        title: Text(post.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(color: Theme
+              .of(context)
+              .colorScheme
+              .surfaceContainerHighest, borderRadius: BorderRadius.circular(8)),
+          child: const Icon(Icons.article),
+        ),
+        title: Text(post.title, maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -102,9 +137,15 @@ class _MyPostCard extends StatelessWidget {
               children: [
                 Icon(Icons.visibility, size: 14, color: Colors.grey[500]),
                 const SizedBox(width: 4),
-                Text('${post.viewCount}', style: Theme.of(context).textTheme.bodySmall),
+                Text('${post.viewCount}', style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodySmall),
                 const SizedBox(width: 12),
-                Text(DateFormat.yMMMd().format(post.createdAt), style: Theme.of(context).textTheme.bodySmall),
+                Text(DateFormat.yMMMd().format(post.createdAt), style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodySmall),
               ],
             ),
           ],
