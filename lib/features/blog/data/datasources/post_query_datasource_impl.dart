@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:blog_app/core/error/exceptions.dart';
 import 'package:blog_app/core/network/supabase/database_client.dart';
+import 'package:blog_app/core/network/supabase/supabase_realtime_client.dart';
 import 'package:blog_app/features/blog/data/datasources/post_query_datasource.dart';
 import 'package:blog_app/features/blog/data/models/post_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PostQueryDataSourceImpl implements PostQueryDataSource {
   final DatabaseClient _databaseClient;
+  final SupabaseRealtimeClient _realtimeClient;
 
-  PostQueryDataSourceImpl(this._databaseClient);
+  PostQueryDataSourceImpl(this._databaseClient, this._realtimeClient);
 
   @override
   Future<List<PostModel>> getPosts({int? rangeFrom, int? rangeTo, String? category}) async {
@@ -68,5 +73,30 @@ class PostQueryDataSourceImpl implements PostQueryDataSource {
     } catch (e) {
       throw ServerException('Failed to search posts: ${e.toString()}');
     }
+  }
+
+  @override
+  Stream<PostModel> watchNewPosts() {
+    final controller = StreamController<PostModel>();
+    final channel = _realtimeClient.subscribeToTable(
+      channelName: 'post-feed',
+      table: 'posts',
+      event: PostgresChangeEvent.insert,
+      onChnage: (payload) async {
+        final newPost = payload.newRecord;
+        final postId = newPost['id'] as String;
+
+        final hydrated = await _databaseClient.selectById('posts', postId, columns: '*, author:profiles!author_id(*)');
+
+        controller.add(PostModel.fromJson(hydrated));
+      },
+    );
+
+    controller.onCancel = () async {
+      await _realtimeClient.unSubscribeFromTable(channel);
+      await controller.close();
+    };
+
+    return controller.stream;
   }
 }

@@ -45,4 +45,17 @@ class PostQueryRepositoryImpl implements PostQueryRepository {
       return Left(ServerFailure('Unexpected error: ${e.toString()}'));
     }
   }
+
+  @override
+  Stream<Either<Failure, PostEntity>> watchNewPosts() {
+    return postQueryDataSource.watchNewPosts().map<Either<Failure, PostEntity>>((post) => Right(post)).handleError((
+      error,
+    ) {
+      if (error is ServerException) {
+        return Left(ServerFailure(error.message));
+      } else {
+        return Left(ServerFailure('Unexpected error: ${error.toString()}'));
+      }
+    });
+  }
 }

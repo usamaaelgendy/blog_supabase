@@ -8,4 +8,6 @@ abstract class PostQueryRepository {
   Future<Either<Failure, List<PostEntity>>> getMyPosts({required String userId, String? category});
 
   Future<Either<Failure, List<PostEntity>>> searchPosts({required String query});
+
+  Stream<Either<Failure, PostEntity>> watchNewPosts();
 }
