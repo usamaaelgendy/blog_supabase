@@ -4,6 +4,8 @@ import 'package:blog_app/core/network/supabase/database_client.dart';
 import 'package:blog_app/core/network/supabase/database_client_impl.dart';
 import 'package:blog_app/core/network/supabase/storage_client.dart';
 import 'package:blog_app/core/network/supabase/storage_client_impl.dart';
+import 'package:blog_app/core/network/supabase/supabase_realtime_client.dart';
+import 'package:blog_app/core/network/supabase/supabase_realtime_client_impl.dart';
 import 'package:blog_app/features/auth/data/datasources/email_auth_datasource.dart';
 import 'package:blog_app/features/auth/data/datasources/email_auth_datasource_impl.dart';
 import 'package:blog_app/features/auth/data/datasources/phone_auth_datasource.dart';
@@ -52,17 +54,12 @@ final sl = GetIt.instance;
 Future<void> initDependencies() async {
   // ===== Core =====
   sl.registerLazySingleton<AuthClient>(
-    () => AuthClientImpl(
-      Supabase.instance.client.auth,
-      Supabase.instance.client.functions,
-    ),
+    () => AuthClientImpl(Supabase.instance.client.auth, Supabase.instance.client.functions),
   );
-  sl.registerLazySingleton<StorageClient>(
-    () => StorageClientImpl(Supabase.instance.client),
-  );
-  sl.registerLazySingleton<DatabaseClient>(
-    () => DatabaseClientImpl(Supabase.instance.client),
-  );
+  sl.registerLazySingleton<StorageClient>(() => StorageClientImpl(Supabase.instance.client));
+  sl.registerLazySingleton<DatabaseClient>(() => DatabaseClientImpl(Supabase.instance.client));
+
+  sl.registerLazySingleton<SupabaseRealtimeClient>(() => SupabaseRealtimeClientImpl(Supabase.instance.client));
 
   // ===== Auth DataSources =====
   sl.registerLazySingleton<EmailAuthDataSource>(() => EmailAuthDataSourceImpl(sl()));

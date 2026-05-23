@@ -1,4 +1,5 @@
 import 'package:blog_app/core/di/injection_container.dart';
+import 'package:blog_app/core/network/supabase/supabase_realtime_client.dart';
 import 'package:blog_app/core/theme/app_theme.dart';
 import 'package:blog_app/features/auth/presentation/bloc/session/session_bloc.dart';
 import 'package:blog_app/features/auth/presentation/bloc/session/session_event.dart';
@@ -24,12 +25,20 @@ void main() async {
 
   await dotenv.load(fileName: '.env');
 
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+  await Supabase.initialize(url: dotenv.env['SUPABASE_URL']!, anonKey: dotenv.env['SUPABASE_ANON_KEY']!);
 
   await initDependencies();
+
+  final realtime = sl<SupabaseRealtimeClient>();
+
+  realtime.subscribeToTable(
+    channelName: 'testing',
+    table: 'posts',
+    onChnage: (payload) {
+      print(payload);
+    },
+  );
+
 
   runApp(const MyApp());
 }
@@ -108,11 +117,7 @@ class BlogHomePage extends StatefulWidget {
 class _BlogHomePageState extends State<BlogHomePage> {
   int _currentIndex = 0;
 
-  final _pages = const [
-    PostsListPage(),
-    MyPostsPage(),
-    ProfilePage(),
-  ];
+  final _pages = const [PostsListPage(), MyPostsPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +134,16 @@ class _BlogHomePageState extends State<BlogHomePage> {
           onDestinationSelected: (index) => setState(() => _currentIndex = index),
           destinations: const [
             NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Feed'),
-            NavigationDestination(icon: Icon(Icons.article_outlined), selectedIcon: Icon(Icons.article), label: 'My Posts'),
-            NavigationDestination(icon: Icon(Icons.person_outlined), selectedIcon: Icon(Icons.person), label: 'Profile'),
+            NavigationDestination(
+              icon: Icon(Icons.article_outlined),
+              selectedIcon: Icon(Icons.article),
+              label: 'My Posts',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outlined),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
           ],
         ),
       ),
