@@ -1,3 +1,4 @@
+import 'package:blog_app/features/blog/domain/entities/post_entity.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class PostQueryEvent extends Equatable {
@@ -41,4 +42,13 @@ class SearchPostsEvent extends PostQueryEvent {
 
 class RefreshPostsEvent extends PostQueryEvent {
   const RefreshPostsEvent();
+}
+
+class NewPostReceivedEvent extends PostQueryEvent {
+  final PostEntity post;
+
+  const NewPostReceivedEvent(this.post);
+
+  @override
+  List<Object?> get props => [post];
 }
