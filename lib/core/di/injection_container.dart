@@ -85,7 +85,7 @@ Future<void> initDependencies() async {
   // ===== Blog DataSources =====
   sl.registerLazySingleton<PostCrudDataSource>(() => PostCrudDataSourceImpl(sl(), sl()));
   sl.registerLazySingleton<PostQueryDataSource>(() => PostQueryDataSourceImpl(sl(), sl()));
-  sl.registerLazySingleton<CommentDataSource>(() => CommentDataSourceImpl(sl()));
+  sl.registerLazySingleton<CommentDataSource>(() => CommentDataSourceImpl(sl(), sl()));
 
   // ===== Blog Repositories =====
   sl.registerLazySingleton<PostCrudRepository>(() => PostCrudRepositoryImpl(postCrudDataSource: sl()));

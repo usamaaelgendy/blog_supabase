@@ -53,4 +53,32 @@ class CommentRepositoryImpl implements CommentRepository {
       return Left(ServerFailure('Unexpected error: ${e.toString()}'));
     }
   }
+
+  @override
+  Stream<Either<Failure, CommentEntity>> watchNewComments({required String postId}) {
+    return commentDataSource
+        .watchNewComments(postId: postId)
+        .map<Either<Failure, CommentEntity>>((comment) => Right(comment))
+        .handleError((error) {
+          if (error is ServerException) {
+            return Left(ServerFailure(error.message));
+          } else {
+            return Left(ServerFailure('Unexpected error: ${error.toString()}'));
+          }
+        });
+  }
+
+  @override
+  Stream<Either<Failure, String>> watchDeletedComments({required String postId}) {
+    return commentDataSource
+        .watchDeletedComments(postId: postId)
+        .map<Either<Failure, String>>((id) => Right(id))
+        .handleError((error) {
+          if (error is ServerException) {
+            return Left(ServerFailure(error.message));
+          } else {
+            return Left(ServerFailure('Unexpected error: ${error.toString()}'));
+          }
+        });
+  }
 }

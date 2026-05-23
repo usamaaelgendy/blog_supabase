@@ -12,4 +12,8 @@ abstract class CommentRepository {
   Future<Either<Failure, List<CommentEntity>>> getComments({required String postId});
 
   Future<Either<Failure, void>> deleteComment(String id);
+
+  Stream<Either<Failure, CommentEntity>> watchNewComments({required String postId});
+
+  Stream<Either<Failure, String>> watchDeletedComments({required String postId});
 }
